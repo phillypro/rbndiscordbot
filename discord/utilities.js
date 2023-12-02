@@ -35,7 +35,22 @@ async function removeRoleFromUser(client, discordUserId) {
     }
 }
 
+async function doesUserHaveRole(client, userId) {
+    try {
+        const guild = await client.guilds.fetch(guildId);
+        const member = await guild.members.fetch(userId);
+         
+        // Check if the member has the role
+        return member.roles.cache.has(roleId);
+    } catch (error) {
+        console.error('Error checking user role:', error);
+        return false;
+    }
+}
+
+
 module.exports = {
     addRoleToUser,
-    removeRoleFromUser
+    removeRoleFromUser,
+    doesUserHaveRole
 };

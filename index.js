@@ -16,12 +16,9 @@ const myBot = new Bot(botToken);
 
 const { checkforActiveSubscription } = require('./stripe/verification');
 
-const webhookApp = require('./stripe/webhooks.js');
+const webhookApp = require('./stripe/webhooks.js')(myBot.client);
 const PORT = process.env.PORT || 3000;
 
-webhookApp.listen(PORT, () => {
-    console.log(`Webhook service running on port ${PORT}`);
-});
 
 
 
@@ -31,8 +28,15 @@ webhookApp.listen(PORT, () => {
 // It makes some properties non-nullable.
 
 myBot.client.once(Events.ClientReady, readyClient => {
-	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-deleteBotMessagesToUser('408163545830785024');
+    console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+
+    webhookApp.listen(PORT, () => {
+        console.log(`Webhook service running on port ${PORT}`);
+    });
+        
+
+
+    deleteBotMessagesToUser('408163545830785024');
 });
 
 /*
