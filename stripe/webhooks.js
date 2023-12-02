@@ -9,7 +9,7 @@ app.use(express.json());
 app.post('/webhook', (request, response) => {
     // ... handle stripe events
     console.log('Received Stripe Webhook:', request.body);
-
+    console.log('ping')
 
 
     response.status(200).send('Event received');
