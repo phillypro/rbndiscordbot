@@ -4,8 +4,6 @@ const { addRoleToUser } = require('../discord/utilities.js');
 
 
 async function checkforActiveSubscription(client, customerEmail, discordUserId) {
-    console.log(` the customer email is ${customerEmail}`)
-    console.log(` the discord id is ${discordUserId}`)
     const customers = await stripe.customers.list({
         email: customerEmail,
         limit: 1

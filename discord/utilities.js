@@ -5,7 +5,6 @@ const roleId = global.roleId;
 
 async function addRoleToUser(client, discordUserId) {
     try {
-        console.log(guildId);
         const guild = client.guilds.cache.get(guildId);
         if (!guild) throw new Error('Guild not found');
 
