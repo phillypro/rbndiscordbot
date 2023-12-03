@@ -33,9 +33,6 @@ myBot.client.once(Events.ClientReady, readyClient => {
     webhookApp.listen(PORT, () => {
         console.log(`Webhook service running on port ${PORT}`);
     });
-        
-
-
     deleteBotMessagesToUser('408163545830785024');
 });
 
@@ -47,7 +44,8 @@ myBot.client.once(Events.ClientReady, readyClient => {
         .setColor('#62E643') // Custom border color
         .setTitle('Exclusive Access to Rich By Noon')
         .setDescription('For access to the money making members only Livestreams and Community chats "Rich By Noon",')
-        .addFields({ name: 'Available', value: '24/7 Access 💰🤑', inline: true });
+        .addFields({ name: 'Available', value: '24/7 Access 💰🤑', inline: true })
+        .setImage('https://i.imgur.com/Rdg3j2K.jpg');
 
     const row = new ActionRowBuilder()
         .addComponents(
@@ -73,7 +71,7 @@ myBot.client.on('interactionCreate', async interaction => {
     if (interaction.customId === 'get_access') {
         // Open a DM with the user
         const dmChannel = await interaction.user.createDM();
-        dmChannel.send(`Hey there! I got your bat signal! Did you already create your account at https://richbynoon.live ? 
+        dmChannel.send(`Hey there! Did you already create your account at https://richbynoon.live ? 
 If so...shoot me the email you used to sign up and ill activate your account 😊`);
         interaction.reply({ content: 'I just sent you a DM!', ephemeral: true });
     }
