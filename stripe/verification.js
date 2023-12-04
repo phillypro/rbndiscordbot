@@ -4,45 +4,48 @@ const { addRoleToUser } = require('../discord/utilities.js');
 
 
 async function checkforActiveSubscription(client, customerEmail, discordUserId) {
-    const customers = await stripe.customers.list({
-        email: customerEmail,
-        limit: 1
-    });
-    if (customers.data.length > 0) {
-    const customerId = customers.data[0].id;
-    const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: 'active'
-    });
-        if (subscriptions.data.length > 0) {
-            // lets run a command that inputs their discord id into their customer model
-            await stripe.customers.update(customerId, {
-                metadata: { discord: discordUserId }
-            });
-            // lets add their role
-            addRoleToUser(client, discordUserId)
-            return 'Their subscription has been confirmed as active. And we have unlocked the members only channels for this user.';
-        } else{
-            const pastDueSubscriptions = await stripe.subscriptions.list({
-                customer: customerId,
-                status: 'past_due'
-            });
-            if (pastDueSubscriptions.data.length > 0) {
-                // lets pull their past due invoice and send them the link
-                const latestInvoiceId = pastDueSubscriptions.data[0].latest_invoice;
-                const invoice = await stripe.invoices.retrieve(latestInvoiceId);
-                
-                // The payment URL for the invoice
-                const paymentUrl = invoice.hosted_invoice_url;
-                return `They have a subscription but it's past due. They need to complete payment at this link ${paymentUrl} and the members only channels will become available`;
-            }else{
-                return 'We found their account in stripe but they dont have an active subscription. They need to resign up at https://join.richbynoon.live/b/14kcOx7IG7T9gxy7st';
-            }
-        }
-    } else {
+    const customers = await stripe.customers.list({ email: customerEmail });
+    if (customers.data.length === 0) {
         return 'No customer found with that email';
     }
+
+    let activeSubscriptionFound = false;
+    let pastDueSubscriptionFound = false;
+    let cancelledSubscriptionFound = false;
+    let responseMessage = '';
+
+    for (const customer of customers.data) {
+        const subscriptions = await stripe.subscriptions.list({
+            customer: customer.id,
+            status: 'all',
+            expand: ['data.latest_invoice']
+        });
+
+        for (const subscription of subscriptions.data) {
+            if (subscription.status === 'active') {
+                await stripe.customers.update(customer.id, {
+                    metadata: { discord: discordUserId }
+                });
+                addRoleToUser(client, discordUserId);
+                return 'Their subscription has been confirmed as active. And we have unlocked the members only channels for this user.';
+            } else if (subscription.status === 'past_due') {
+                pastDueSubscriptionFound = true;
+                responseMessage = `They have a subscription but it's past due. They need to complete payment at this link ${subscription.latest_invoice.hosted_invoice_url} and the members only channels will become available.`;
+            } else if (subscription.status === 'canceled') {
+                cancelledSubscriptionFound = true;
+            }
+        }
+    }
+
+    if (pastDueSubscriptionFound) {
+        return responseMessage;
+    } else if (cancelledSubscriptionFound) {
+        return 'We found their account in Stripe, but their subscription is cancelled. They need to resign up at https://join.richbynoon.live/b/14kcOx7IG7T9gxy7st';
+    } else {
+        return 'We found their account in Stripe but they don’t have an active subscription. They need to resign up at https://join.richbynoon.live/b/14kcOx7IG7T9gxy7st';
+    }
 }
+
 
 
 module.exports = { checkforActiveSubscription };
