@@ -23,7 +23,7 @@ async function checkforActiveSubscription(client, customerEmail, discordUserId) 
            
         for (const subscription of subscriptions.data) {
             console.log(subscription);
-            if (subscription.status === 'active') {
+            if (subscription.status === 'active' || subscription.status === 'trialing') {
                 await stripe.customers.update(customer.id, {
                     metadata: { discord: discordUserId }
                 });
