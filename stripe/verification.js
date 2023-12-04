@@ -36,7 +36,7 @@ async function checkforActiveSubscription(client, customerEmail, discordUserId) 
                 const paymentUrl = invoice.hosted_invoice_url;
                 return `They have a subscription but it's past due. They need to complete payment at this link ${paymentUrl} and the members only channels will become available`;
             }else{
-                return 'We found their account in stripe but they dont have an active subscription. They need to resign up at https://richbynoon.live';
+                return 'We found their account in stripe but they dont have an active subscription. They need to resign up at https://join.richbynoon.live/b/14kcOx7IG7T9gxy7st';
             }
         }
     } else {
