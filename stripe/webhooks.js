@@ -30,7 +30,8 @@ app.post('/webhook', (request, response) => {
 
             // damn they left for real...lets schedule a sell blue winback
             if (request.body.type === 'customer.subscription.deleted') {
-               //
+                removeRoleFromUser(client, discordUserId);
+               //lets also hit them up
             }
 
         } else {
