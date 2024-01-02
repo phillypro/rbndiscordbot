@@ -4,7 +4,7 @@ module.exports = function (client) {
 const express = require('express');
 const app = express();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-const { removeRoleFromUser, addRoleToUser, doesUserHaveRole } = require('../discord/utilities');
+const { removeRoleFromUser, addRoleToUser, doesUserHaveRole, messageUserForUpdate } = require('../discord/utilities');
 
 
 app.use(express.json());
