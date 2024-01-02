@@ -26,6 +26,7 @@ app.post('/webhook', (request, response) => {
             // payment failed kick em out
             if (request.body.type === 'payment_intent.payment_failed') {
                 removeRoleFromUser(client, discordUserId);
+                messageUserForUpdate(client, discordUserId);
             }
 
             // damn they left for real...lets schedule a sell blue winback

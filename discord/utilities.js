@@ -49,8 +49,25 @@ async function doesUserHaveRole(client, userId) {
 }
 
 
+async function messageUserForUpdate(client, discordUserId) {
+    try {
+        // Fetch the user using their Discord ID
+        const user = await client.users.fetch(discordUserId);
+        if (!user) throw new Error('User not found');
+
+        // Send a DM to the user
+        await user.send("There's an issue with your account. To regain access login to http://members.richbynoon.live and update your account information");
+        console.log(`Message sent to user ${discordUserId}`);
+    } catch (error) {
+        console.error('Error sending message to user:', error);
+    }
+}
+
+
+
 module.exports = {
     addRoleToUser,
     removeRoleFromUser,
-    doesUserHaveRole
+    doesUserHaveRole,
+    messageUserForUpdate
 };
