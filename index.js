@@ -45,7 +45,7 @@ myBot.client.once(Events.ClientReady, readyClient => {
         .setTitle('Exclusive Access to Rich By Noon')
         .setDescription('For access to the money making members only Livestreams and Community chats "Rich By Noon",')
         .addFields({ name: 'Available', value: '24/7 Access 💰🤑', inline: true })
-        .setImage('https://i.imgur.com/Rdg3j2K.jpg');
+        .setImage('https://i.imgur.com/oI9k9PL.jpg');
 
     const row = new ActionRowBuilder()
         .addComponents(

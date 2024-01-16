@@ -9,12 +9,20 @@ async function checkforActiveSubscription(client, customerEmail, discordUserId) 
     if (customers.data.length === 0) {
         return 'No customer found with that email';
     }
-
+    let duplicateTrialSubscription = false;
     let activeSubscriptionFound = false;
     let pastDueSubscriptionFound = false;
     let cancelledSubscriptionFound = false;
     let responseMessage = '';
+    
+    // catch duplicate trials
+    let existingTrial = await findExistingTrialPeriod(customers);
+    if(existingTrial.hasProduct) {
+        return `Account requires manual activation due to existing past due invoice ${existingTrial.invoiceUrl}`;
+    }
+    
 
+    // new customers
     for (const customer of customers.data) {
         const subscriptions = await stripe.subscriptions.list({
             customer: customer.id,
@@ -48,6 +56,48 @@ async function checkforActiveSubscription(client, customerEmail, discordUserId) 
     }
 }
 
-
+async function findExistingTrialPeriod(customers) {
+    // stop scammers
+    if (customers.data.length > 1) {
+        for (const customer of customers.data) {
+            // Retrieve subscriptions that are either past_due or canceled
+            const subscriptions = await stripe.subscriptions.list({
+                customer: customer.id,
+                status: 'all', // We need to retrieve all and then filter in code because Stripe API does not support multiple statuses in a single request
+                expand: ['data.items']
+            });
+        
+            // Filter for past_due and canceled subscriptions
+            const filteredSubscriptions = subscriptions.data.filter(sub => 
+                sub.status === 'past_due' || sub.status === 'canceled'
+            );
+        
+            for (const subscription of filteredSubscriptions) {
+                // Check if any subscription items match the product ID
+                const hasProduct = subscription.items.data.some(item => 
+                    item.plan.product === 'prod_Ox8l41CouNym4X'
+                );
+            
+                if (hasProduct) {
+                    // Fetch the invoice details using the invoice ID
+                    let invoiceUrl = '';
+                    if (subscription.latest_invoice) {
+                        try {
+                            const invoice = await stripe.invoices.retrieve(subscription.latest_invoice);
+                            if (invoice && invoice.hosted_invoice_url) {
+                                invoiceUrl = invoice.hosted_invoice_url;
+                            }
+                        } catch (error) {
+                            console.error("Error fetching invoice details:", error);
+                            // Handle error (e.g., invoice not found or API error)
+                        }
+                    }
+            
+                    return { hasProduct: true, invoiceUrl: invoiceUrl };
+                }
+            }            
+        }        
+    }
+}
 
 module.exports = { checkforActiveSubscription };
