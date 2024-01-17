@@ -17,7 +17,7 @@ async function checkforActiveSubscription(client, customerEmail, discordUserId) 
     
     // catch duplicate trials
     let existingTrial = await findExistingTrialPeriod(customers);
-    if(existingTrial.hasProduct) {
+    if(existingTrial && existingTrial.hasProduct) {
         return `Account requires manual activation due to existing past due invoice ${existingTrial.invoiceUrl}`;
     }
     

@@ -5,6 +5,7 @@ const express = require('express');
 const app = express();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const { removeRoleFromUser, addRoleToUser, doesUserHaveRole, messageUserForUpdate } = require('../discord/utilities');
+const { welcomeCustomer } = require('../discord/sellblue');
 
 
 app.use(express.json());
@@ -33,6 +34,12 @@ app.post('/webhook', (request, response) => {
             if (request.body.type === 'customer.subscription.deleted') {
                 removeRoleFromUser(client, discordUserId);
                //lets also hit them up
+            }
+
+            // damn they left for real...lets schedule a sell blue winback
+            if (request.body.type === 'customer.subscription.deleted') {
+                welcomeCustomer(customer);
+                //lets also hit them up
             }
 
         } else {
