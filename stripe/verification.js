@@ -5,9 +5,18 @@ const { addRoleToUser } = require('../discord/utilities.js');
 
 async function checkforActiveSubscription(client, customerEmail, discordUserId) {
     customerEmail = customerEmail.toLowerCase();
-    const customers = await stripe.customers.list({ email: customerEmail });
+    let customers = await stripe.customers.list({ email: customerEmail });
     if (customers.data.length === 0) {
-        return 'No customer found with that email';
+        const newCustomers = await stripe.customers.list({
+            limit: 100
+          });
+          const matchingCustomers = newCustomers.data.filter(newCustomer => newCustomer.email?.toLowerCase() === customerEmail);
+
+          if (matchingCustomers.length > 0) {
+            customers.data = matchingCustomers;
+        } else {
+            return 'No customer found with that email';
+        } 
     }
     let duplicateTrialSubscription = false;
     let activeSubscriptionFound = false;
