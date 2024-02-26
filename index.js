@@ -136,7 +136,7 @@ myBot.client.on('messageCreate', async (message) => {
           ]
 
 		const createChatObject = {
-			model: 'gpt-3.5-turbo',
+			model: 'gpt-4',
 			messages,
             functions,
             function_call: 'auto',
@@ -166,7 +166,7 @@ myBot.client.on('messageCreate', async (message) => {
       
       
             const secondResponse = await openai.chat.completions.create({
-              model: 'gpt-3.5-turbo',
+              model: 'gpt-4',
               messages,
             functions,
             function_call: 'auto',
