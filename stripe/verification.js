@@ -4,6 +4,7 @@ const { addRoleToUser } = require('../discord/utilities.js');
 
 
 async function checkforActiveSubscription(client, customerEmail, discordUserId) {
+    console.log('checking for active subscription');
     customerEmail = customerEmail.toLowerCase();
     let customers = await stripe.customers.list({ email: customerEmail });
     if (customers.data.length === 0) {
@@ -66,6 +67,7 @@ async function checkforActiveSubscription(client, customerEmail, discordUserId) 
 }
 
 async function findExistingTrialPeriod(customers) {
+    console.log('looking for existing trial');
     // stop scammers
     if (customers.data.length > 1) {
         for (const customer of customers.data) {
@@ -73,40 +75,43 @@ async function findExistingTrialPeriod(customers) {
             const subscriptions = await stripe.subscriptions.list({
                 customer: customer.id,
                 status: 'all', // We need to retrieve all and then filter in code because Stripe API does not support multiple statuses in a single request
-                expand: ['data.items']
+                expand: ['data.items', 'data.latest_invoice']
             });
-        
+
             // Filter for past_due and canceled subscriptions
             const filteredSubscriptions = subscriptions.data.filter(sub => 
                 sub.status === 'past_due' || sub.status === 'canceled'
             );
-        
+
             for (const subscription of filteredSubscriptions) {
                 // Check if any subscription items match the product ID
                 const hasProduct = subscription.items.data.some(item => 
                     item.plan.product === 'prod_Ox8l41CouNym4X'
                 );
-            
+
                 if (hasProduct) {
-                    // Fetch the invoice details using the invoice ID
-                    let invoiceUrl = '';
+                    // Access the latest invoice directly
                     if (subscription.latest_invoice) {
-                        try {
-                            const invoice = await stripe.invoices.retrieve(subscription.latest_invoice);
-                            if (invoice && invoice.hosted_invoice_url) {
-                                invoiceUrl = invoice.hosted_invoice_url;
-                            }
-                        } catch (error) {
-                            console.error("Error fetching invoice details:", error);
-                            // Handle error (e.g., invoice not found or API error)
+                        const invoice = subscription.latest_invoice;
+
+                        if (invoice.status === 'paid') {
+                            // Invoice is paid, so ignore this subscription
+                            continue; // Skip to the next subscription
+                        } else {
+                            // Invoice is not paid, so we need to consider this subscription
+                            let invoiceUrl = invoice.hosted_invoice_url || '';
+                            return { hasProduct: true, invoiceUrl: invoiceUrl };
                         }
+                    } else {
+                        // No latest invoice, perhaps consider this subscription?
+                        // Let's assume we ignore subscriptions without invoices
+                        continue;
                     }
-            
-                    return { hasProduct: true, invoiceUrl: invoiceUrl };
                 }
-            }            
-        }        
+            }
+        }
     }
 }
+
 
 module.exports = { checkforActiveSubscription };
